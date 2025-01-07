@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  font-family: Outfit;
+}
+
+.prata-regular {
+  font-family: "prata-regular";
+  font-weight: 400;
+  font-style: normal
+}
+
+a.active hr {
+  @apply block;
+}
+
+::-webkit-scrollbar{
+  @apply hidden
+}
+
+@media(max-width:640px){
+  a.active{
+    background-color: black;
+    color: white;
+  }
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50; /* Ensure the navbar has a high z-index */
+  background-color: white; /* Set background color */
+}
