@@ -19,8 +19,6 @@ const PlaceOrder = () => {
     street:'',
     city:'',
     state:'',
-    city:'',
-    state:'',
     zipcode:'',
     country:'',
     phone:'',
