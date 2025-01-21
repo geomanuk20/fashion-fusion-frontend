@@ -11,7 +11,8 @@ const Cart = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const tempData = [];
+    if(products.length > 0) {
+      const tempData = [];
     for (const items in cartItems) {
       for (const item in cartItems[items]) {
         if (cartItems[items][item] > 0) {
@@ -24,6 +25,7 @@ const Cart = () => {
       }
     }
     setCartData(tempData);
+    }
   }, [cartItems]);
 
   const handleQuantityChange = (itemId, size, quantity) => {
@@ -82,7 +84,7 @@ const Cart = () => {
                     >+</button>
                   </div>
                 </div>
-                <img className="w-4 mr-4 sm:w-5 cursor-pointer" src={assets.bin_icon} alt="Delete" />
+                <img onClick={()=> updateItemQuantity(item._id,item.size,0)} className="w-4 mr-4 sm:w-5 cursor-pointer" src={assets.bin_icon} alt="Delete" />
               </div>
             );
           })

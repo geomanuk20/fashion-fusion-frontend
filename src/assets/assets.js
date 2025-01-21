@@ -53,8 +53,9 @@ import p_img49 from './p_img49.png'
 import p_img50 from './p_img50.png'
 import p_img51 from './p_img51.png'
 import p_img52 from './p_img52.png'
+import fav from './icons8-favorites.gif';
 
-
+import user from './usericon.png'
 import logo from './logo.png'
 import hero_img from './hero_img.png'
 import cart_icon from './cart_icon.png'
@@ -75,6 +76,7 @@ import stripe_logo from './stripe_logo.png'
 import cross_icon from './cross_icon.png'
 
 export const assets = {
+    user,
     logo,
     hero_img,
     cart_icon,
@@ -92,7 +94,8 @@ export const assets = {
     contact_img,
     razorpay_logo,
     stripe_logo,
-    cross_icon
+    cross_icon,
+    fav,
 }
 
 export const products = [

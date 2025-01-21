@@ -2,19 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
-import { useAuth0 } from "@auth0/auth0-react";
-import axios from "axios";
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
-  const { search, setSearch, showSearch, setShowSearch, getCartCount } = useContext(ShopContext);
+  const { search, setSearch, showSearch, setShowSearch, getCartCount, token, setToken } = useContext(ShopContext);
   const cartCount = getCartCount();
   const location = useLocation();
   const [view, setView] = useState(false);
-  const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
 
   useEffect(() => {
     if (location.pathname.includes('collection')) {
@@ -25,26 +19,21 @@ const Navbar = () => {
   }, [location]);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Send user data to your backend
-      axios.post(`${backendUrl}/user/login`, {
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-        sub: user.sub, // Pass the Auth0 unique user ID (sub) as auth0Id
-      })
-      .then(response => {
-        console.log("User data saved:", response.data);
-      })
-      .catch(error => {
-        console.error("Error saving user data:", error);
-      });
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+      setToken(savedToken); // Update the context state
+      // Optionally, you can verify the token with the server here
     }
-  }, [isAuthenticated, user]);
+  }, []);
   
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    setToken('');
+    // Redirect to login or home page after logout
+  };
 
   return (
-    <div className="flex items-center justify-between py-2 font-medium bg-white backdrop-blur-sm sticky top-0 z-50">  {/* Added z-50 */}
+    <div className="flex items-center justify-between py-2 font-medium bg-white backdrop-blur-sm sticky top-0 z-50">
       <Link to='/'><img src={assets.logo} className="w-16 mx-auto" alt="Logo" /></Link>
       {showSearch && view ? (
         <div className="flex-1 inline-flex items-center justify-center border border-gray-400 px-5 py-2 my-2 mx-6 lg:mx-60 rounded-full">
@@ -77,25 +66,25 @@ const Navbar = () => {
           <img onClick={() => setShowSearch(true)} src={assets.search_icon} className="w-5 cursor-pointer" alt="Search" />
         )}
         <div className="group relative">
-          {!isAuthenticated ? (
-            <Link onClick={() => loginWithRedirect()}>
+          {!token ? (
+            <Link to="/login">
               <img src={assets.profile_icon} className="w-5 cursor-pointer" alt="Profile" />
             </Link>
           ) : (
             <>
-              <img src={user.picture} className="w-8 h-8 rounded-full cursor-pointer" alt="User Profile" />
+              <img src={assets.user} className="w-8 h-8 rounded-full cursor-pointer" alt="User Profile" />
               <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
                 <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded">
                   <NavLink to={'/profile'}><p className="cursor-pointer hover:text-black">My Profile</p></NavLink>
                   <NavLink to={'/order'}><p className="cursor-pointer hover:text-black">Order</p></NavLink>
-                  <p onClick={() => logout({ returnTo: window.location.origin })} className="cursor-pointer hover:text-black">Logout</p>
+                  <p onClick={handleLogout} className="cursor-pointer hover:text-black">Logout</p>
                 </div>
               </div>
             </>
           )}
         </div>
         <NavLink to='/favourite' className="relative hidden md:block">
-          <img width="30" height="30" src="https://img.icons8.com/ios/30/hearts--v1.png" alt="Favourites" />
+          <img width="30" height="30" src={assets.fav} alt="Favourites" />
         </NavLink>
         <Link to="/cart" className="relative hidden md:block">
           <img src={assets.cart_icon} className="w-5 min-w-5" alt="Cart" />
@@ -124,7 +113,7 @@ const Navbar = () => {
           <NavLink onClick={() => setVisible(false)} className="py-2 pl-6 border" to="/favourite">Wishlist</NavLink>
           <NavLink onClick={() => setVisible(false)} className="py-2 pl-6 border" to="/cart">Cart</NavLink>
         </div>
-        <p className="flex items-center justify-center pt-52 py-4">FashionFusion&copy;2024</p>
+        <p className="flex items-center justify-center pt-64 py-4">FashionFusion&copy;2024</p>
       </div>
     </div>
   );

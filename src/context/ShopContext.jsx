@@ -17,7 +17,7 @@ const ShopContextProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([]);
   const [products, setProducts] = useState([]);
   const [hero, setHero] = useState([]);
-  const [token,setToken] = useState('')
+  const [token, setToken] = useState('');
   const navigate = useNavigate();
 
   const addToCart = async (itemId, size) => {
@@ -25,37 +25,118 @@ const ShopContextProvider = ({ children }) => {
       toast.error('Select product size');
       return;
     }
-
-    let cartData = JSON.parse(JSON.stringify(cartItems));
-
+  
+    let cartData = structuredClone(cartItems);
+  
     if (cartData[itemId]) {
-      if (cartData[itemId][size]) {
-        cartData[itemId][size] += 1;
-      } else {
-        cartData[itemId][size] = 1;
-      }
+      if(cartData[itemId][size]) {
+      cartData[itemId][size] += 1;
     } else {
-      cartData[itemId] = {};
-      cartData[itemId][size] = 1;
+      cartData[itemId] = 1 ;
     }
-
+    }
+    else{
+      cartData[itemId] = {}
+      cartData[itemId][size] = 1
+    }
+    console.log('cartData:', cartData);
     setCartItems(cartData);
-  };
+  
+    if(token){
+      try {
+        await axios.post(backendUrl + '/api/cart/add',{itemId,size},{headers:{token}})
 
-  const updateItemQuantity = (itemId, size, quantity) => {
-    let cartData = JSON.parse(JSON.stringify(cartItems));
-    if (cartData[itemId] && cartData[itemId][size]) {
-      cartData[itemId][size] = quantity;
-      if (quantity <= 0) {
-        delete cartData[itemId][size];
-        if (Object.keys(cartData[itemId]).length === 0) {
-          delete cartData[itemId];
-        }
+      } catch (error) {
+        console.log(error)
+        toast.error(error.message)
       }
     }
-    setCartItems(cartData);
+  };
+  
+  const getUserCart = async (token) => {
+    try {
+      const response = await axios.post(backendUrl + '/api/cart/get',{},{headers:{token}})
+      if(response.data.success){
+        setCartItems(response.data.cartData)
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
   };
 
+  const updateItemQuantity = async (itemId, size, quantity) => {
+    let cartData = structuredClone(cartItems);
+
+    cartData[itemId][size] = quantity;
+  
+    setCartItems(cartData);
+
+    if(token){
+      try {
+        await axios.post(backendUrl + '/api/cart/update',{itemId,size,quantity},{headers:{token}})
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const addToFavorites = async (itemId) => {
+    let favData = structuredClone(favorites);
+  
+    if (favData[itemId]) {
+      favData[itemId] += 1;
+    } else {
+      favData[itemId] = 1;
+    }
+    console.log('favData:', favData);
+    setFavorites(favData);
+  
+    if (token) {
+      try {
+        await axios.post(backendUrl + '/api/favorite/add', { itemId }, { headers: { token } });
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
+  };
+  
+  const getUserFavorites = async (token) => {
+    try {
+      const response = await axios.post(backendUrl + '/api/favorite/get', {}, { headers: { token } });
+      if (response.data.success) {
+        setFavorites(response.data.favData);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+  
+  const updateFavoriteQuantity = async (itemId, quantity) => {
+    let favData = structuredClone(favorites);
+  
+    if (quantity === 0) {
+      delete favData[itemId];
+    } else {
+      favData[itemId] = quantity;
+    }
+  
+    setFavorites(favData);
+  
+    if (token) {
+      try {
+        await axios.post(backendUrl + '/api/favorite/update', { itemId, quantity }, { headers: { token } });
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
+  };
+  
+  
   const getCartCount = () => {
     let totalCount = 0;
     for (const items in cartItems) {
@@ -85,17 +166,6 @@ const ShopContextProvider = ({ children }) => {
     return totalAmount;
   };
 
-  const addToFavorites = (productId, size) => {
-    const product = products.find(item => item._id === productId);
-    if (product) {
-      setFavorites(prevFavorites => [...prevFavorites, { ...product, size }]);
-    }
-  };
-
-  const removeFromFavorites = (productId) => {
-    setFavorites(prevFavorites => prevFavorites.filter(item => item._id !== productId));
-  };
-
   const getProductData = async () => {
     try {
       const response = await axios.get(`${backendUrl}/api/product/list`);
@@ -113,7 +183,7 @@ const ShopContextProvider = ({ children }) => {
 
   const getAdsData = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/api/ads/add`);
+      const response = await axios.get(`${backendUrl}/api/ads/list`);
       console.log(response.data);
       if (response.data.success) {
         setHero(response.data.products);
@@ -127,9 +197,16 @@ const ShopContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log(cartItems);
     getProductData();
   }, [cartItems]);
+
+  useEffect(() => { 
+    if (token) { 
+      getUserCart(token); 
+      getUserFavorites(token); 
+      getAdsData(token)
+    } 
+  }, [token]);
 
   const value = {
     products,
@@ -141,17 +218,20 @@ const ShopContextProvider = ({ children }) => {
     setShowSearch,
     cartItems,
     addToCart,
+    getUserCart,
     getCartCount,
     getCartAmount,
     updateItemQuantity,
     navigate,
     favorites,
     addToFavorites,
-    removeFromFavorites,
+    updateFavoriteQuantity,
     backendUrl,
-    token,setToken,
+    token, 
+    setToken,
     getAdsData,
-    hero
+    hero,
+    setCartItems
   };
 
   return (

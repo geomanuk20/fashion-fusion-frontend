@@ -6,11 +6,10 @@ import RelatedProducts from "../components/RelatedProducts";
 
 const Product = () => {
   const { productId } = useParams();
-  const { products, currency, addToCart, addToFavorites,removeFromFavorites } = useContext(ShopContext);
+  const { products, currency, addToCart, addToFavorites, updateFavoriteQuantity, favorites } = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState('');
   const [size, setSize] = useState('');
-  const [favorites,setFavorites] = useState(false)
 
   const fetchProductData = async () => {
     products.forEach((item) => {
@@ -25,13 +24,12 @@ const Product = () => {
     fetchProductData();
   }, [productId, products]);
 
-  const handleFavoriteClick = () => { 
-    if (favorites) { 
-      removeFromFavorites(productData._id, size); 
-    } else { 
-      addToFavorites(productData._id, size); 
+  const handleFavoriteClick = () => {
+    if (favorites[productData._id]) {
+      updateFavoriteQuantity(productData._id, 0); // Pass 0 to remove the item from favorites
+    } else {
+      addToFavorites(productData._id);
     }
-    setFavorites(!favorites); 
   };
 
   return productData ? (
@@ -48,7 +46,7 @@ const Product = () => {
           </div>
           <div className="w-full sm:w-[80%] relative">
             <img className="w-full h-auto" src={image} alt="" />
-            <img onClick={handleFavoriteClick} className="absolute top-2 right-2 w-8 h-8 cursor-pointer" src={favorites ? "https://img.icons8.com/color/30/like--v3.png" : "https://img.icons8.com/ios/30/hearts--v1.png"} alt="Favourites" />
+            <img onClick={handleFavoriteClick} className="absolute top-2 right-2 w-8 h-8 cursor-pointer" src={favorites[productData._id] ? "https://img.icons8.com/color/30/like--v3.png" : "https://img.icons8.com/ios/30/hearts--v1.png"} alt="Favorites" />
           </div>
         </div>
 
@@ -79,7 +77,7 @@ const Product = () => {
           <hr className="mt-8 sm:w-4/5" />
           <div className="text-sm text-gray-500 mt-5 flex flex-col gap-1">
             <p>100% Original product.</p>
-            <p>Cash on delivery is availabale on this product</p>
+            <p>Cash on delivery is available on this product</p>
             <p>Easy return and exchange policy within 7 days</p>
           </div>
         </div>
@@ -98,7 +96,7 @@ const Product = () => {
       {/* display related products */}
       <RelatedProducts category={productData.category} subCategory={productData.subCategory} />
     </div>
-  ) : <div className="opacity-0"></div>
+  ) : <div className="opacity-0"></div>;
 }
 
 export default Product;
