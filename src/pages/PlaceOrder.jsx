@@ -11,7 +11,7 @@ import { toast } from "react-toastify"
 const PlaceOrder = () => {
 
   const [method,setMethod] = useState('cod');
-  const {navigate,backendUrl,token,cartItems, setCartItems,delivery_fee,products} = useContext(ShopContext)
+  const {navigate,backendUrl,token,cartItems,getCartAmount, setCartItems,delivery_fee,products} = useContext(ShopContext)
   const [formData , setFormData] = useState({
     firstName:'',
     lastName:'',
@@ -33,50 +33,83 @@ const PlaceOrder = () => {
 
   }
 
-  const onSubmitHandler = async (event) =>{
-    event.preventDefault()
+  const initPay = (order) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency:order.currency,
+      name:'Order Payment',
+      description:'Order payment',
+      order_id: order.id,
+      receipt:order.receipt,
+      handler: async(response) =>{
+        console.log(response);
+        
+      }
+    }
+    const rzp = new window.Razorpay(options)
+    rzp.open()
+  }
+
+  const onSubmitHandler = async (event) => {
+    event.preventDefault();
     try {
-      let orderItems = []
-      for(const items in cartItems){
-        for(const item in cartItems[items]){
-          if(cartItems[items][item] > 0){
-            const itemInfo = structuredClone(products.find(product => product._id === items))
-            if(itemInfo){
-              itemInfo.size = item
-              itemInfo.quantity = cartItems[items][item]
-              orderItems.push(itemInfo)
+      let orderItems = [];
+      for (const items in cartItems) {
+        for (const item in cartItems[items]) {
+          if (cartItems[items][item] > 0) {
+            const itemInfo = structuredClone(products.find(product => product._id === items));
+            if (itemInfo) {
+              itemInfo.size = item;
+              itemInfo.quantity = cartItems[items][item];
+              orderItems.push(itemInfo);
             }
           }
         }
       }
-
+  
       let orderData = {
-        address:formData,
-        items:orderItems,
-        amount:getCartAmount() + delivery_fee
-      }
-      
-      switch(method){
-
-        // api calls for cod
+        address: formData,
+        items: orderItems,
+        amount: getCartAmount() + delivery_fee
+      };
+  
+      switch (method) {
         case 'cod':
-          const  response = await axios.post(backendUrl + '/api/order/place',orderData,{headers:{token}})
-          console.log(response.data)
-          if(response.data.success){
-            setCartItems({})
-            navigate('/orders')
-          }else{
-            toast.error(response.data.message)
+          const response = await axios.post(backendUrl + '/api/order/place', orderData, { headers: { token } });
+          if (response.data.success) {
+            setCartItems({});
+            navigate('/orders');
+          } else {
+            toast.error(response.data.message);
           }
-        break;
-
+          break;
+        case 'stripe':
+          const responseStripe = await axios.post(backendUrl + '/api/order/stripe', orderData, { headers: { token } });
+          if (responseStripe.data.success) {
+            const { session_url } = responseStripe.data;
+            window.location.replace(session_url);
+          } else {
+            toast.error(responseStripe.data.message);
+          }
+          break;
+        case 'razorpay':
+          const responseRazorpay = await axios.post(backendUrl + '/api/order/razorpay', orderData, { headers: { token } });
+          if (responseRazorpay.data.success) {
+            initPay(responseRazorpay.data.order); // Use responseRazorpay here
+          } else {
+            toast.error(responseRazorpay.data.message);
+          }
+          break;
         default:
           break;
       }
     } catch (error) {
-      
+      console.log(error);
+      toast.error(error.message);
     }
-  }
+  };
+  
   
 
   return (

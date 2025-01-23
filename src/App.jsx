@@ -16,6 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
+import Verify from './pages/Verify.jsx';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 console.log(backendUrl);
@@ -36,8 +37,9 @@ const App = () => {
         <Route path="/favourite" element={<Favourite />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} /> 
         <Route path="/place-order" element={<PlaceOrder />} />
-        <Route path="/orders" element={<ProtectedRoute element={<Order />} />} />
+        <Route path="/orders"  element={<Order />} />
         <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
+        <Route path="/verify" element={<Verify/>} />
       </Routes>
       <Footer />
     </div>
