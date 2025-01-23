@@ -2,11 +2,12 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
+import { FaCheck, FaTimes } from "react-icons/fa"; // Import icons from react-icons
 
 
 const Order = () => {
   const { backendUrl, token, currency } = useContext(ShopContext);
-  const [orderData, setOrderData] = useState([]); // Correct useState hook
+  const [orderData, setOrderData] = useState([]);
 
   const loadOrderData = async () => {
     try {
@@ -14,7 +15,7 @@ const Order = () => {
         return null;
       }
       const response = await axios.post(backendUrl + '/api/order/userorders', {}, { headers: {token} });
-      console.log(response.data); // Log API response
+      console.log(response.data);
       if(response.data.success){
         let allOrdersItem = [];
         response.data.orders.forEach((order) => {
@@ -29,7 +30,7 @@ const Order = () => {
         setOrderData(allOrdersItem.reverse());
       }
     } catch (error) {
-      console.error(error); // Log any errors
+      console.error(error);
     }
   };
 
@@ -50,17 +51,24 @@ const Order = () => {
                 <img className="w-16 sm:w-20" src={item.image[0]} alt={item.name} />
                 <div className="flex flex-col">
                   <p className="text-xs sm:text-lg font-medium">{item.name}</p>
-                  <p >{currency}{item.price}</p>
+                  <p>{currency}{item.price}</p>
                   <p>Quantity:{item.quantity}</p>
                   <p>Size: {item.size}</p>
                   <p className="mt-1">Date: <span className="text-gray-300">{new Date(item.date).toDateString()}</span></p>
-                  <p className="mt-1">payment: <span className="text-gray-300">{item.paymentMethod}</span></p>
+                  <p className="mt-1">Payment: <span className="text-gray-300">{item.paymentMethod}</span></p>
                 </div>
               </div>
-              <div className="md:w-1/2 flex justify-between">
+              <div className="md:w-1/2 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <p className="min-w-2 rounded-full bg-green-500 h-2 w-2"></p>
                   <p className="text-sm md:text-base">{item.status}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {item.payment ? 
+                    <FaCheck className="text-green-500" /> : 
+                    <FaTimes className="text-red-500" />
+                  }
+                  <p>{item.payment ? "Paid" : "Not Paid"}</p>
                 </div>
                 <button onClick={loadOrderData} className="border px-4 py-2 text-sm font-medium rounded-sm">Track Order</button>
               </div>
