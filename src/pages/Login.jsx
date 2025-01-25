@@ -48,9 +48,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-  const handleLogin = () => {
-    window.open("http://localhost:5000/auth/google", "_self");
-};
+  
 
   return (
     <form className="min-h-[80vh] flex items-center" onSubmit={onSubmitHandler}>
@@ -99,7 +97,6 @@ const Login = () => {
             )}
           </>
         )}
-        <button onClick={handleLogin}>Login with Google</button>
       </div>
     </form>
   );
