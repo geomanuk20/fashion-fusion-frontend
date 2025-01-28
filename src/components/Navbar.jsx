@@ -99,8 +99,8 @@ const Navbar = () => {
         )}
       </div>
       {/* Sidebar menu for small screens */}
-      <div className={`absolute top-0 right-0 -bottom-350 h-max overflow-auto bg-gray-50 transition-all ${visible ? 'w-2/3 sm:w-1/3' : 'w-0'}`}>
-        <div className="flex flex-col text-gray-600">
+      <div className={`absolute top-0 right-0  h-screen overflow-auto bg-gray-50 transition-all ${visible ? 'w-2/3 sm:w-1/3' : 'w-0'}`}>
+        <div className="flex flex-col text-gray-600 ">
           <div onClick={() => setVisible(false)} className="flex items-center gap-4 p-3 cursor-pointer">
             <img className="h-4 rotate-180" src={assets.dropdown_icon} alt="Back" />
             <p>Back</p>
@@ -113,7 +113,7 @@ const Navbar = () => {
           <NavLink onClick={() => setVisible(false)} className="py-2 pl-6 border" to="/favourite">Wishlist</NavLink>
           <NavLink onClick={() => setVisible(false)} className="py-2 pl-6 border" to="/cart">Cart</NavLink>
         </div>
-        <p className="flex items-center justify-center pt-64 py-4">FashionFusion&copy;2024</p>
+        <p className="flex items-center justify-center pt-64 py-4 ">FashionFusion&copy;2024</p>
       </div>
     </div>
   );
